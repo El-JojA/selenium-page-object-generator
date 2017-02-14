@@ -5,6 +5,8 @@ var ArgumentParser = require('argparse').ArgumentParser;
 var path = require('path');
 var rootDir = path.join(__dirname, '..');
 var packagejson = require(path.join(rootDir, 'package.json'));
+
+
 var parser = new ArgumentParser({
     description: packagejson.description,
     version: packagejson.version
@@ -28,14 +30,36 @@ parser.addArgument(['-s', '--source'], {
     required: true
 });
 
-var args = parser.parseArgs();
+/** Set the parameters as fixed for the moment for testing
+    
+    The following code was added to haddle static parameters, to restore the parameter 
+    uncomment the block of code above this comment. And uncomment the line of code:
+        args = parser.parseArgs();
+    which is commented a couple of lines bellow.
+*/
+
+var _target = "java";
+var _name = "uistgPageObject";
+var _destination = null;
+var _source = "uistg.html";
+var _args ={
+    target:_target,
+    name:_name,
+    destination:_destination,
+    source:_source
+};
+var args;
+//args= _args;
+args = parser.parseArgs();
+
+
 var execDir = process.cwd();
 var fs = require('fs');
 var jsdom = require('jsdom');
 var mkdirp = require('mkdirp');
 var commonDir = path.join(rootDir, 'src', 'common');
 var common = require(path.join(commonDir, 'common.js'));
-GLOBAL.Handlebars = require(path.join(rootDir, 'libs', 'handlebars-v3.0.3.js'));
+global.Handlebars = require(path.join(rootDir, 'libs', 'handlebars-v3.0.3.js'));
 require(path.join(commonDir, 'helpers.js'));
 
 var overrides = {
@@ -72,11 +96,12 @@ function getFileContent(path) {
     return response;
 }
 
-jsdom.env({
+var jsdomConfig = {
     file: paths.source,
     scripts: [path.join(rootDir, 'libs', 'treewalker-polyfill-0.2.0.js'),
               path.join(commonDir, 'common.js'),
-              path.join(commonDir, 'generator.js')],
+              path.join(commonDir, 'generator.js'), 
+              path.join(rootDir, 'libs', 'json2.js')],
     done: function (err, window) {
         try {
             jsdom.getVirtualConsole(window).sendTo(console);
@@ -100,4 +125,8 @@ jsdom.env({
             window.close();
         }
     }
-});
+};
+
+var window = jsdom.env(jsdomConfig);
+
+
