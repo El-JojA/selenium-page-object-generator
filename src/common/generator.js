@@ -1,4 +1,5 @@
 window.POGLoaded = !!window.POG;
+var log;
 window.POG=(function() {
     // to compartment any js error on the page
     var ELEMENT_NODE = 1;
@@ -114,7 +115,7 @@ window.POG=(function() {
         // deep copy
         buffer.attribute = Object.extend(buffer.attribute);
         buffer.operation = Object.extend(buffer.operation);
-        
+
         var idName = buffer.attribute.value;
         var suffixes = {
             action: (actionLowered === 'click') ? ' on' : '',
@@ -141,7 +142,7 @@ window.POG=(function() {
 
         //buffer.attribute.name = getLetter(input.text, input.letters.attribute);
         buffer.attribute.name = getLetter(idName, input.letters.attribute);
-        
+
         buffer.operation.documentation = input.action + suffixes.action +
             suffixes.documentation;
         buffer.operation.name = getLetter(input.action + suffixes.name,
@@ -276,6 +277,10 @@ window.POG=(function() {
         return text.trim();
     }
 
+    /**
+     * getLocator returns an object with the strategy and value fo said strategy
+     * to locate an element given. Can be added angular strategies.
+     * */
     function getLocator(node, angular) {
         var response = {};
 
@@ -288,6 +293,9 @@ window.POG=(function() {
                 response.strategy = 'id';
                 response.value = node.id;
             }
+            /**
+             *  //jcardona
+             *  //this portion of the code was taken of to handdle only elements with ID
             else if (node.name) {
                 response.strategy = 'name';
                 response.value = node.name;
@@ -311,6 +319,7 @@ window.POG=(function() {
                     response.value = getCSSSelector(node);
                 }
             }
+             */
         }
 
         return response;
@@ -545,11 +554,12 @@ window.POG=(function() {
 
     function setDefinitions(input) {
         var definitions = [];
-        var root = document.querySelector(input.nodes.root) || document;
-        var nodes = (root) ? root.querySelectorAll(input.nodes.selector) : [];
+        var root = document.querySelector(input.nodes.root) || document; // gets the element root from which is going to be selected the rest of the nodes
+        //var nodes = (root) ? root.querySelectorAll(input.nodes.selector) : []; // gets all the nodes from root according to desired tags within input.nodes.selector
+        var nodes = (root) ? root.querySelectorAll("[id]") : []; // gets all the nodes from root according to desired tags within input.nodes.selector
+       //writeLog(nodes);
         var type = {}.toString.call(nodes);
-
-        if (!(type === '[object NodeList]' || type === '[object Object]')) {
+        if (!(type === '[object NodeList]' || type === '[object Object]')) { //validates all went as expected :)
             input.definitions = definitions;
             return input;
         }
@@ -575,9 +585,11 @@ window.POG=(function() {
                 var hasUnset = false;
                 var label = '';
                 var locator = getLocator(node, input.nodes.angular);
+
                 var text = node.textContent || node.innerText || '';
 
-                if(locator.strategy==='id') {//  will only get elements with ID
+                // this following 'spaghetti' validation checks for locator to NOT be null, so that only elements with ID are proccesed. //jcardona
+                if(!(Object.keys(locator).length === 0 && locator.constructor === Object)) {
                     buffer.attribute.strategy = locator.strategy;
                     buffer.attribute.value = locator.value;
                     buffer.sourceIndex = node.sourceIndex || [].indexOf.call(tags, node);
@@ -790,7 +802,7 @@ window.POG=(function() {
                 }
                 //IF IT HAS NO ID
                 else{
-                    //implement some handdling here but may not be needed :v
+                    //implement some handdling here but may not be needed :v //jcardona
                 }
             }
         }
@@ -910,6 +922,15 @@ window.POG=(function() {
         return input;
     }
 
+    //** =====================================================================
+    // Debug area
+    // */
+
+    function writeLog (data) {
+        log = data;
+    }
+
+
     // ========================================================================
     // POG namespace
 
@@ -917,12 +938,11 @@ window.POG=(function() {
         generate: function(input) {
             input = input || {};
             var output = Object.extend(input);
-
             output = common.setDefaultValues(output);
-            output = setDefinitions(output);
+;           output = setDefinitions(output);
             output.url = document.location.href;
 
-            return output;
+            return {out: output, logz:log};
         },
         LETTERS: LETTERS,
         VISIBILITIES: VISIBILITIES

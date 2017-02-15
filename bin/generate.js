@@ -13,7 +13,7 @@ var parser = new ArgumentParser({
 });
 
 parser.addArgument(['-t', '--target'], {
-    choices: ['cs', 'java', 'robot'],
+    choices: ['cs', 'java', 'robot', 'groovy'],
     help: 'Generator target',
     required: true
 });
@@ -31,8 +31,8 @@ parser.addArgument(['-s', '--source'], {
 });
 
 /** Set the parameters as fixed for the moment for testing
-    
-    The following code was added to haddle static parameters, to restore the parameter 
+
+    The following code was added to haddle static parameters, to restore the parameter
     uncomment the block of code above this comment. And uncomment the line of code:
         args = parser.parseArgs();
     which is commented a couple of lines bellow.
@@ -100,12 +100,12 @@ var jsdomConfig = {
     file: paths.source,
     scripts: [path.join(rootDir, 'libs', 'treewalker-polyfill-0.2.0.js'),
               path.join(commonDir, 'common.js'),
-              path.join(commonDir, 'generator.js'), 
+              path.join(commonDir, 'generator.js'),
               path.join(rootDir, 'libs', 'json2.js')],
     done: function (err, window) {
         try {
             jsdom.getVirtualConsole(window).sendTo(console);
-            var specs = targets[args.target];
+            //var specs = targets[args.target];
             var config = require(paths.config);
             config = window.common.setDefaultValues(config);
             overrides.model.include = config.model.include;
@@ -113,9 +113,10 @@ var jsdomConfig = {
             var input = Object.extend({}, config, overrides);
             var output = window.POG.generate(input);
             var template = getFileContent(paths.template);
-            var generated = (Handlebars.compile(template))(output);
+            var generated = (Handlebars.compile(template))(output.out);
             mkdirp.sync(path.dirname(paths.target));
             fs.writeFileSync(paths.target, generated);
+            //fs.writeFileSync("log.txt", JSON.stringify(output.logz));
             console.log('The file is saved: ' + paths.target);
         }
         catch (ex) {
