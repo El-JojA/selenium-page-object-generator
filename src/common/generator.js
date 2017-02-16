@@ -113,8 +113,9 @@ window.POG=(function() {
         var actionLowered = input.action.toLowerCase();
         var buffer = Object.extend(input.buffer);
         // deep copy
-        buffer.attribute = Object.extend(buffer.attribute);
-        buffer.operation = Object.extend(buffer.operation);
+        //jcardona taking of redundancy, maybe not.
+        //buffer.attribute = Object.extend(buffer.attribute);
+        //buffer.operation = Object.extend(buffer.operation);
 
         var idName = buffer.attribute.value;
         var suffixes = {
@@ -292,6 +293,8 @@ window.POG=(function() {
             if (node.id) {
                 response.strategy = 'id';
                 response.value = node.id;
+            }else{
+                console.log("non id strat");
             }
             /**
              *  //jcardona

@@ -6,6 +6,10 @@ var path = require('path');
 var rootDir = path.join(__dirname, '..');
 var packagejson = require(path.join(rootDir, 'package.json'));
 
+String.prototype.contains = function (compareWith) {
+    return !!~args.source.indexOf(compareWith);
+}
+
 
 var parser = new ArgumentParser({
     description: packagejson.description,
@@ -38,7 +42,7 @@ parser.addArgument(['-s', '--source'], {
     which is commented a couple of lines bellow.
 */
 
-var _target = "java";
+var _target = "groovy";
 var _name = "uistgPageObject";
 var _destination = null;
 var _source = "uistg.html";
@@ -48,19 +52,23 @@ var _args ={
     destination:_destination,
     source:_source
 };
-var args;
 //args= _args;
-args = parser.parseArgs();
 
-
-var execDir = process.cwd();
 var fs = require('fs');
 var jsdom = require('jsdom');
 var mkdirp = require('mkdirp');
+var execDir = process.cwd();
+
 var commonDir = path.join(rootDir, 'src', 'common');
 var common = require(path.join(commonDir, 'common.js'));
 global.Handlebars = require(path.join(rootDir, 'libs', 'handlebars-v3.0.3.js'));
 require(path.join(commonDir, 'helpers.js'));
+
+
+var args;
+args = parser.parseArgs();
+//fixing args.source
+args.source = args.source.contains(":") ? args.source : path.join(execDir, args.source);
 
 var overrides = {
     model: {
@@ -71,16 +79,28 @@ var overrides = {
 
 var paths = {
     config: path.join(rootDir, 'configs', args.target + '.json'),
-    source: path.join(execDir, args.source),
-    target: path.join(execDir, args.name + '.' + args.target),
+    source: args.source,
+    target: path.join(getSourcePath(args.source), args.name + '.' + args.target),
     template: path.join(rootDir, 'templates', args.target + '.handlebars')
 };
 
 var targets = {
     cs: { label: 'C#' },
     java: { label: 'Java' },
-    robot: { label: 'Robot Framework' }
+    robot: { label: 'Robot Framework' },
+    groovy: { label: 'Groovy'}
 };
+
+function getSourcePath(sourcePath){
+    var sourceFolders = sourcePath.split('\\');
+    var result = "";
+    for (var i = 0; i < sourceFolders.length -1 ; i++){
+        result += sourceFolders[i] + "\\";
+    }
+    return result;
+}
+
+
 
 function getFileContent(path) {
     var response = '';
