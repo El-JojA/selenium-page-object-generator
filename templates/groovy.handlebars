@@ -1,12 +1,10 @@
-{{#if model.namespace}}package {{model.namespace}}
+{{#if model.namespace}}package {{{model.namespace}}}
 
 {{else}}
-/**
-* PLEASE ADD HERE THE PACKAGE NAMESAPCE
-*/
+// TODO: add here the package namespace
 
 {{/if}}
-{{#if model.basepage.namespace}}import {{model.basepage.namespace}}
+{{#if model.basepage.namespace}}import {{{model.basepage.namespace}}}
 {{else}}// TODO: import the BasePageObject according to the project you are working on
 {{/if}}
 import org.openqa.selenium.By
@@ -17,7 +15,7 @@ import org.openqa.selenium.support.FindBy
 
 {{#if copyright.claimant}}
 /*
-* Copyright (c) {{copyright.year}}, {{copyright.claimant}}.
+* Copyright (c) {{copyright.year}}, {{{copyright.claimant}}}.
 * All Rights Reserved.
 */
 {{/if}}
@@ -27,36 +25,51 @@ import org.openqa.selenium.support.FindBy
 * By Katch LLC.
 */
 
-public class {{model.name}} {{#if model.basepage.name}} extends {{model.basepage.name}}<{{model.name}}>{{/if}} {
+public class {{{model.name}}} {{#if model.basepage.name}} extends {{{model.basepage.name}}}<{{{model.name}}}>{{/if}} {
 
 {{#attributes}}
 {{#if attribute.strategy}}
     @FindBy({{attribute.strategy}} = "{{{attribute.value}}}")
-    private {{#equals type 'radio'}}List<WebElement>{{else}}WebElement{{/equals}} {{attribute.value}}
+    private {{#equals type 'radio'}}List<WebElement>{{else}}WebElement{{/equals}} {{idvalid attribute.value}}
 {{/if}}
 {{/attributes}}
 
-    public {{model.name}}(WebDriver driver) {
+    {{model.name}}(WebDriver driver) {
         super(driver)
     }
 
-//Click elements
-{{#attributes}}
-    {{#if attribute.strategy}}
-    {{model.name}} click{{proper attribute.value}}(){
-        clickElement({{attribute.value}})
+    //Click elements
+{{#each definitions}}
+    {{../model.name}} click{{idvalid attribute.value}}(){
+        clickElement({{idvalid attribute.value}})
     }
-    {{/if}}
-{{/attributes}}
+
+{{/each}}
+
+    //SetText on elements
+{{#each definitions}}
+    {{../model.name}} set{{idvalid attribute.value}}Text(String s){
+        sendKeys({{idvalid attribute.value}}, s)
+    }
+
+{{/each}}
 
 
-//SetText elements
-{{#attributes}}
-    {{#if attribute.strategy}}
-    {{model.name}} set{{proper attribute.value}}Text(String s){
-        sendKeys({{attribute.value}}, s)
+    //isDisplay on elements
+{{#each definitions}}
+    boolean is{{idvalid attribute.value}}Displayed(){
+        isDisplayed({{idvalid attribute.value}})
     }
-    {{/if}}
-{{/attributes}}
+
+{{/each}}
+
+    //isNotDisplay on elements
+{{#each definitions}}
+    boolean is{{idvalid attribute.value}}NotDisplayed(){
+        isNotDisplayed({{idvalid attribute.value}})
+    }
+
+{{/each}}
+
 
 }

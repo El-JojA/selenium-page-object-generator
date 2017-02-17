@@ -933,11 +933,6 @@ window.POG=(function() {
     // Debug area
     // */
 
-    function writeLog (data) {
-        log = data;
-    }
-
-
     // ========================================================================
     // POG namespace
 

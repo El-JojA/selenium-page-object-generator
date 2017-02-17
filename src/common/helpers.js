@@ -123,3 +123,12 @@ Handlebars.registerHelper('unequals', function(operand1, operand2, options) {
         options.inverse(this);
 });
 
+/**
+ * Replace hyphens(-) for dollar signs($). This is because the dollar signs are not technically permited in HTML
+ * attributes so we can make sure that we are not going to have duplicated IDs
+ **/
+Handlebars.registerHelper('idvalid', function (str) {
+    str = str.charAt(0).toLowerCase() + str.substr(1);
+    return str.replace('-','$');
+});
+
