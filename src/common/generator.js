@@ -293,8 +293,6 @@ window.POG=(function() {
             if (node.id) {
                 response.strategy = 'id';
                 response.value = node.id;
-            }else{
-                console.log("non id strat");
             }
             /**
              *  //jcardona
@@ -560,7 +558,6 @@ window.POG=(function() {
         var root = document.querySelector(input.nodes.root) || document; // gets the element root from which is going to be selected the rest of the nodes
         //var nodes = (root) ? root.querySelectorAll(input.nodes.selector) : []; // gets all the nodes from root according to desired tags within input.nodes.selector
         var nodes = (root) ? root.querySelectorAll("[id]") : []; // gets all the nodes from root according to desired tags within input.nodes.selector
-       //writeLog(nodes);
         var type = {}.toString.call(nodes);
         if (!(type === '[object NodeList]' || type === '[object Object]')) { //validates all went as expected :)
             input.definitions = definitions;
@@ -588,7 +585,6 @@ window.POG=(function() {
                 var hasUnset = false;
                 var label = '';
                 var locator = getLocator(node, input.nodes.angular);
-
                 var text = node.textContent || node.innerText || '';
 
                 // this following 'spaghetti' validation checks for locator to NOT be null, so that only elements with ID are proccesed. //jcardona
@@ -596,6 +592,9 @@ window.POG=(function() {
                     buffer.attribute.strategy = locator.strategy;
                     buffer.attribute.value = locator.value;
                     buffer.sourceIndex = node.sourceIndex || [].indexOf.call(tags, node);
+
+                    /**
+                     * //jcardona. Adds operations according to the type of element that it is.
 
                     switch(node.nodeName) {
                         case 'A':
@@ -704,18 +703,20 @@ window.POG=(function() {
                             text = getNodeText(node);
                             break;
                     }
-
+                     */
                     var fullText = getSanitizedText(text);
                     text = getSanitizedText(text, 6);
 
                     if (text !== '') {
-                        if (texts[text]) {
+                        //jcardona manage of text within elements. idc about it.
+                        /*if (texts[text]) {
                             texts[text]++;
 
                             if (texts[text] === 2) {
                                 var firstText = text + ' 1';
 
                                 // need to adjust the first entry and make it as part of the group
+
                                 definition = getDefinition({
                                     action: action,
                                     buffer: definitions[firsts[text]],
@@ -759,7 +760,7 @@ window.POG=(function() {
                             if (hasUnset) {
                                 unsets[text] = index + 2;
                             }
-                        }
+                        }*/
 
                         definition = getDefinition({
                             action: action,
@@ -803,15 +804,13 @@ window.POG=(function() {
                         }
                     }
                 }
-                //IF IT HAS NO ID
-                else{
-                    //implement some handdling here but may not be needed :v //jcardona
-                }
-            }
+            }else{ console.log("nodo botado");}
+
         }
 
         // operation extras
-        if (hasField && input.operations.extras.fill) {
+        //jcardona idc about autofilling()
+        /*if (hasField && input.operations.extras.fill) {
             var buffer = {
                 attribute: {},
                 operation: {
@@ -825,28 +824,31 @@ window.POG=(function() {
 
             // faster array push
             definitions[++index] = buffer;
-        }
+        }*/
 
-        if (hasField && submit.text !== '' && input.operations.extras['fill.submit']) {
-            var buffer = {
-                attribute: {},
-                operation: {
-                    documentation: 'Fill every fields in the page and submit it to target page.',
-                    name: getLetter('Fill And Submit', input.operations.letter)
-                },
-                negate: true,
-                sourceIndex: -1,
-                target: {
-                    modelName: input.model.target
-                },
-                type: 'fill.submit'
-            };
+        //jcardona idc about autofilling()
+        // if (hasField && submit.text !== '' && input.operations.extras['fill.submit']) {
+        //     var buffer = {
+        //         attribute: {},
+        //         operation: {
+        //             documentation: 'Fill every fields in the page and submit it to target page.',
+        //             name: getLetter('Fill And Submit', input.operations.letter)
+        //         },
+        //         negate: true,
+        //         sourceIndex: -1,
+        //         target: {
+        //             modelName: input.model.target
+        //         },
+        //         type: 'fill.submit'
+        //     };
+        //
+        //     // faster array push
+        //     definitions[++index] = buffer;
+        // }
 
-            // faster array push
-            definitions[++index] = buffer;
-        }
 
-        if (submit.text !== '' && input.operations.extras.submit) {
+        //jcardona extra operations are not needed
+        /*if (submit.text !== '' && input.operations.extras.submit) {
             var buffer = {
                 attribute: {},
                 operation: {
@@ -865,9 +867,10 @@ window.POG=(function() {
 
             // faster array push
             definitions[++index] = buffer;
-        }
+        }*/
 
-        if (input.operations.extras['verify.loaded']) {
+        //jcardona extra operations are not needed
+        /*if (input.operations.extras['verify.loaded']) {
             var sourceText = getPageVisibleHTML();
             sourceText = sourceText.replace(/(<([^>]+)>)/gi, '\n');
             var sentences = getSentences(sourceText);
@@ -896,9 +899,10 @@ window.POG=(function() {
 
             // faster array push
             definitions[++index] = buffer;
-        }
+        }*/
 
-        if (input.operations.extras['verify.url']) {
+        //jcardona this operation is awful
+        /*if (input.operations.extras['verify.url']) {
             // it's better to generate more information than less
             var uri = location.href.replace(document.location.origin, '');
 
@@ -917,9 +921,9 @@ window.POG=(function() {
 
             // faster array push
             definitions[++index] = buffer;
-        }
+        }*/
 
-        input.attributes.longestName = longestName;
+        //input.attributes.longestName = longestName;
 
         input.definitions = definitions;
         return input;
@@ -942,7 +946,7 @@ window.POG=(function() {
             input = input || {};
             var output = Object.extend(input);
             output = common.setDefaultValues(output);
-;           output = setDefinitions(output);
+            output = setDefinitions(output);
             output.url = document.location.href;
 
             return {out: output, logz:log};

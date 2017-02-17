@@ -1,1 +1,16 @@
-{}
+{
+  "nodes": {
+    "selector": "[id]"
+  },
+  "copyright": {
+    "claimant": "",
+    "author":"jcardona"
+  },
+  "model": {
+    "basepage":{
+      "name": "BaseObamaPage",
+      "namespace": "com.katch.obamacare.pages.base.BaseObamaPage"
+    }
+  }
+
+}
