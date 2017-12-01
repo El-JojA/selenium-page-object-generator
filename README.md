@@ -1,6 +1,3 @@
-<a target="_blank" href="https://chrome.google.com/webstore/detail/epgmnmcjdhapiojbohkkemlfkegmbebb">![Install from Chrome Web Store](/images/chrome-web-store.png "Click here to install this extension from the Chrome Web Store")</a>
-<a target="_blank" href="https://addons.opera.com/en/extensions/details/selenium-page-object-generator">![Install from Opera Addons Catalog](/images/opera-addons-catalog.png "Click here to install this extension from the Opera Addons Catalog")</a>
-
 
 Selenium Page Object Generator
 ==============================
@@ -44,7 +41,7 @@ Selenium Page Object Generator accepts the following command line arguments:
 selenium-page-object-generator [options]
 
   -h, --help                                 Show this help message and exit.
-  -v, --version                              Show program's version number and exit.
+  -v, --version                              Show programs version number and exit.
   -t, --target {cs,java,robot}               Generator target
   -n, --name [PageName]                      Page name (no-spaces)
   -d, --destination [DestinationPageName]    Destination page name (no-spaces) (optional)
@@ -73,22 +70,58 @@ Development
 -
 To build the sources into corresponding packages, run:
 
-```bash
-$ gulp
-```
+Selenium Page Object Generator
+==============================
 
-The `/build` folder and `/dist` folder are created. All built files are placed in the `build` folder, and the distribution ready packages are placed in `dist` folder.
+Based on the [Selenium Page Object Model](https://code.google.com/p/selenium/wiki/PageObjects) pattern, this is a Page Object generator to improve [agile testing](https://en.wikipedia.org/wiki/Agile_testing) [process velocity](https://en.wikipedia.org/wiki/Velocity_(software_development)). The template is using [Handlebars.js](http://handlebarsjs.com/) expression, a clean logic-less semantic templating language. This solution was forked and reworked on github: [https://github.com/rickypc/selenium-page-object-generator](https://github.com/rickypc/selenium-page-object-generator). 
 
-Distribution
+This is an early release, it expected to have rough edges, and limited functionality. It currently support 2 different targets: [Java](https://en.wikipedia.org/wiki/Java_(programming_language)), and [Groovy](https://en.wikipedia.org/wiki/Groovy_(programming_language)) but can be easily ported to any other language. For more information on how to use the generated Page Object file:
+
+Java: [http://www.guru99.com/page-object-model-pom-page-factory-in-selenium-ultimate-guide.html](http://www.guru99.com/page-object-model-pom-page-factory-in-selenium-ultimate-guide.html)
+
+You need Node.JS 5+ to try this out.
+
+Installation
 -
-Once the changes are in-place and ready for distribution, update `package.json` with new version, and run:
+
+- [Install *node.js* and *npm*](https://nodejs.org/en/download/). Be sure to have node.js version 5+. On GNU/Linux, repositories can be outdated, so a simple ```apt-get install``` might not be enough to get the right version. 
+- Clone the repo.
+- Open a terminal/cdm.
+- In the terminal go to the repo directory that you just cloned. For example on Windows:
+```bash
+$ cd "C:\Your\Project\Folder\selenium-page-object-generator" 
+```
+- Run the following command:
+```bash
+$ npm install
+```
+ This will install all the necesary modules required on the package.json file. 
+
+Command Line Usage
+-
+Selenium Page Object Generator accepts the following command line arguments:
 
 ```bash
-$ gulp
+selenium-page-object-generator [options]
+
+  -h, --help                                 Show this help message and exit.
+  -v, --version                              Show program's version number and exit.
+  -t, --target {cs,java,robotm, groovy}      Generator target
+  -n, --name [PageName]                      Page name (no-spaces)
+  -d, --destination [DestinationPageName]    Destination page name (no-spaces) (optional)
+  -s, --source [source.html]                 Source file
 ```
 
-The `/dist` folder will contain distribution ready packages.
+Examples
+-
+To generate Java page object:
 
+- Open bash in your OS
+```bash
+$ cd GENERATOR_PATH
+$ node .\bin\generate.js -t groovy -s .\examples\obamaform.html -n ObamaFormPageObject
+```
+Where GENERATOR_PATH is the path where you cloned the repo (eg. "C:\Your\Project\Folder\selenium-page-object-generator")
 Contributing
 -
 If you would like to contribute code to Selenium Page Object Generator project you can do so through GitHub by forking the repository and sending a pull request.
@@ -103,7 +136,7 @@ License
 -
 Copyright (c) 2015, 2016 Richard Huang.
 
-This browser extension is free software, licensed under: [GNU Affero General Public License (AGPL-3.0)](http://www.gnu.org/licenses/agpl-3.0.en.html).
+The original browser extension by Richard Huan is free software, licensed under: [GNU Affero General Public License (AGPL-3.0)](http://www.gnu.org/licenses/agpl-3.0.en.html).
 
 Documentation and other similar content are provided under [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-nc-sa/4.0/).
 
@@ -113,6 +146,3 @@ Licenses and Acknowledgements for Incorporated Software
 - [Handlebars](http://handlebarsjs.com/) is an [open source](http://opensource.org) software provided under [MIT license](http://opensource.org/licenses/MIT).
 - [jQuery](https://jquery.com/) is an [open source](http://opensource.org) software provided under [MIT license](http://opensource.org/licenses/MIT).
 
-Screenshot
--
-![screenshot](/images/screenshot-opera-1.png)
