@@ -46,7 +46,7 @@ Handlebars.registerHelper('equals', function(operand1, operand2, options) {
         options.inverse(this);
 });
 
-Handlebars.registerHelper('fill', function(options) {
+/*Handlebars.registerHelper('fill', function(options) {
     var root = options.data.root;
 
     if (Handlebars.Utils.isEmpty(root.definitions)) {
@@ -71,7 +71,7 @@ Handlebars.registerHelper('fill', function(options) {
 
         return buffer.join(root.fill.separator);
     }
-});
+});*/
 
 Handlebars.registerHelper('lower', function(value) {
     var response = value;
@@ -82,7 +82,7 @@ Handlebars.registerHelper('lower', function(value) {
     return response;
 });
 
-Handlebars.registerHelper('operations', function(options) {
+/*Handlebars.registerHelper('operations', function(options) {
     var root = options.data.root;
 
     if (Handlebars.Utils.isEmpty(root.definitions)) {
@@ -104,7 +104,7 @@ Handlebars.registerHelper('operations', function(options) {
 
         return buffer.join(root.operations.separator);
     }
-});
+});*/
 
 Handlebars.registerHelper('proper', function(value) {
     var response = value;
@@ -122,3 +122,13 @@ Handlebars.registerHelper('unequals', function(operand1, operand2, options) {
     return (operand1 !== operand2) ? options.fn(this) :
         options.inverse(this);
 });
+
+/**
+ * Replace hyphens(-) for dollar signs($). This is because the dollar signs are not technically permited in HTML
+ * attributes so we can make sure that we are not going to have duplicated IDs
+ **/
+Handlebars.registerHelper('idvalid', function (str) {
+    str = str.charAt(0).toLowerCase() + str.substr(1);
+    return str.replace('-','$');
+});
+

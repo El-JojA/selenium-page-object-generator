@@ -1,4 +1,5 @@
 window.POGLoaded = !!window.POG;
+var log;
 window.POG=(function() {
     // to compartment any js error on the page
     var ELEMENT_NODE = 1;
@@ -112,8 +113,11 @@ window.POG=(function() {
         var actionLowered = input.action.toLowerCase();
         var buffer = Object.extend(input.buffer);
         // deep copy
-        buffer.attribute = Object.extend(buffer.attribute);
-        buffer.operation = Object.extend(buffer.operation);
+        //jcardona taking of redundancy, maybe not.
+        //buffer.attribute = Object.extend(buffer.attribute);
+        //buffer.operation = Object.extend(buffer.operation);
+
+        var idName = buffer.attribute.value;
         var suffixes = {
             action: (actionLowered === 'click') ? ' on' : '',
             label: (actionLowered === 'set') ? ' Field' : ''
@@ -137,7 +141,9 @@ window.POG=(function() {
                 input.letters.attribute);
         }
 
-        buffer.attribute.name = getLetter(input.text, input.letters.attribute);
+        //buffer.attribute.name = getLetter(input.text, input.letters.attribute);
+        buffer.attribute.name = getLetter(idName, input.letters.attribute);
+
         buffer.operation.documentation = input.action + suffixes.action +
             suffixes.documentation;
         buffer.operation.name = getLetter(input.action + suffixes.name,
@@ -272,6 +278,10 @@ window.POG=(function() {
         return text.trim();
     }
 
+    /**
+     * getLocator returns an object with the strategy and value fo said strategy
+     * to locate an element given. Can be added angular strategies.
+     * */
     function getLocator(node, angular) {
         var response = {};
 
@@ -284,6 +294,9 @@ window.POG=(function() {
                 response.strategy = 'id';
                 response.value = node.id;
             }
+            /**
+             *  //jcardona
+             *  //this portion of the code was taken of to handdle only elements with ID
             else if (node.name) {
                 response.strategy = 'name';
                 response.value = node.name;
@@ -307,6 +320,7 @@ window.POG=(function() {
                     response.value = getCSSSelector(node);
                 }
             }
+             */
         }
 
         return response;
@@ -541,11 +555,11 @@ window.POG=(function() {
 
     function setDefinitions(input) {
         var definitions = [];
-        var root = document.querySelector(input.nodes.root) || document;
-        var nodes = (root) ? root.querySelectorAll(input.nodes.selector) : [];
+        var root = document.querySelector(input.nodes.root) || document; // gets the element root from which is going to be selected the rest of the nodes
+        //var nodes = (root) ? root.querySelectorAll(input.nodes.selector) : []; // gets all the nodes from root according to desired tags within input.nodes.selector
+        var nodes = (root) ? root.querySelectorAll("[id]") : []; // gets all the nodes from root according to desired tags within input.nodes.selector
         var type = {}.toString.call(nodes);
-
-        if (!(type === '[object NodeList]' || type === '[object Object]')) {
+        if (!(type === '[object NodeList]' || type === '[object Object]')) { //validates all went as expected :)
             input.definitions = definitions;
             return input;
         }
@@ -573,148 +587,139 @@ window.POG=(function() {
                 var locator = getLocator(node, input.nodes.angular);
                 var text = node.textContent || node.innerText || '';
 
-                buffer.attribute.strategy = locator.strategy;
-                buffer.attribute.value = locator.value;
-                buffer.sourceIndex = node.sourceIndex || [].indexOf.call(tags, node);
+                // this following 'spaghetti' validation checks for locator to NOT be null, so that only elements with ID are proccesed. //jcardona
+                if(!(Object.keys(locator).length === 0 && locator.constructor === Object)) {
+                    buffer.attribute.strategy = locator.strategy;
+                    buffer.attribute.value = locator.value;
+                    buffer.sourceIndex = node.sourceIndex || [].indexOf.call(tags, node);
 
-                switch(node.nodeName) {
-                    case 'A':
-                        action = 'Click';
-                        buffer.type = 'link';
-                        label = 'Link';
-                        text = text || getLinkText(node);
+                    /**
+                     * //jcardona. Adds operations according to the type of element that it is.
 
-                        if (submit.text === '' && text.toLowerCase().indexOf('submit') > -1) {
-                            submit.label = label;
-                            submit.text = text;
-                        }
-                        break;
-                    case 'BUTTON':
-                        action = 'Click';
-                        buffer.type = 'button';
-                        label = 'Button';
-
-                        if (submit.text === '' && ((node.type || '').toLowerCase() === 'submit' ||
-                                text.toLowerCase().indexOf('submit') > -1)) {
-                            submit.label = label;
-                            submit.text = text;
-                        }
-                        break;
-                    case 'INPUT':
-                        var inputType = node.type || '';
-
-                        if ('|button|image|submit|'.indexOf('|' + inputType + '|') > -1) {
+                    switch(node.nodeName) {
+                        case 'A':
                             action = 'Click';
-                            buffer.type = 'button';
-                            label = 'Button';
-                            text = text || node.value || getNodeText(node);
+                            buffer.type = 'link';
+                            label = 'Link';
+                            text = text || getLinkText(node);
 
-                            if (inputType === 'submit') {
+                            if (submit.text === '' && text.toLowerCase().indexOf('submit') > -1) {
                                 submit.label = label;
                                 submit.text = text;
                             }
-                            else if (submit.text === '' && text.toLowerCase().
-                                indexOf('submit') > -1) {
+                            break;
+                        case 'BUTTON':
+                            action = 'Click';
+                            buffer.type = 'button';
+                            label = 'Button';
+
+                            if (submit.text === '' && ((node.type || '').toLowerCase() === 'submit' ||
+                                    text.toLowerCase().indexOf('submit') > -1)) {
+                                submit.label = label;
+                                submit.text = text;
+                            }
+                            break;
+                        case 'INPUT':
+                            var inputType = node.type || '';
+
+                            if ('|button|image|submit|'.indexOf('|' + inputType + '|') > -1) {
+                                action = 'Click';
+                                buffer.type = 'button';
+                                label = 'Button';
+                                text = text || node.value || getNodeText(node);
+
+                                if (inputType === 'submit') {
                                     submit.label = label;
                                     submit.text = text;
                                 }
-                        }
-                        else {
-                            if (inputType === 'hidden') {
-                                break;
+                                else if (submit.text === '' && text.toLowerCase().
+                                    indexOf('submit') > -1) {
+                                        submit.label = label;
+                                        submit.text = text;
+                                    }
                             }
-                            else if (inputType === 'checkbox') {
-                                hasUnset = true;
-                            }
-                            else if ('|email|number|password|radio|search|tel|text|url|'.
-                                    indexOf('|' + inputType + '|') > -1) {
-                                hasArgument = true;
-                            }
-
-                            label = getLetter(inputType, LETTERS.PROPER);
-                            text = text || getNodeText(node);
-
-                            if (inputType === 'radio') {
-                                label = 'Radio Button';
-                                if (buffer.attribute.strategy !== 'name' && node.name) {
-                                    buffer.attribute.strategy = 'name';
-                                    buffer.attribute.value = node.name;
+                            else {
+                                if (inputType === 'hidden') {
+                                    break;
+                                }
+                                else if (inputType === 'checkbox') {
+                                    hasUnset = true;
+                                }
+                                else if ('|email|number|password|radio|search|tel|text|url|'.
+                                        indexOf('|' + inputType + '|') > -1) {
+                                    hasArgument = true;
                                 }
 
-                                var radioValueBuffer = {
-                                    attribute: {
-                                        name: getLetter(getSanitizedText(text, 6) + ' Value',
-                                            input.attributes.letter),
-                                        value: node.value
-                                    },
-                                    operation: {},
-                                    sourceIndex: -1,
-                                    type: 'radio.value'
-                                };
+                                label = getLetter(inputType, LETTERS.PROPER);
+                                text = text || getNodeText(node);
 
-                                // faster array push
-                                definitions[++index] = radioValueBuffer;
+                                if (inputType === 'radio') {
+                                    label = 'Radio Button';
+                                    if (buffer.attribute.strategy !== 'name' && node.name) {
+                                        buffer.attribute.strategy = 'name';
+                                        buffer.attribute.value = node.name;
+                                    }
 
-                                longestName = getLongestName(radioValueBuffer.attribute.name,
-                                    longestName);
+                                    var radioValueBuffer = {
+                                        attribute: {
+                                            name: getLetter(getSanitizedText(text, 6) + ' Value',
+                                                input.attributes.letter),
+                                            value: node.value
+                                        },
+                                        operation: {},
+                                        sourceIndex: -1,
+                                        type: 'radio.value'
+                                    };
+
+                                    // faster array push
+                                    definitions[++index] = radioValueBuffer;
+
+                                    longestName = getLongestName(radioValueBuffer.attribute.name,
+                                        longestName);
+                                }
+
+                                if ('|email|number|password|search|tel|url|'.
+                                        indexOf('|' + inputType + '|') > -1) {
+                                    inputType = 'text';
+                                }
+
+                                action = 'Set';
+                                buffer.type = inputType;
                             }
-
-                            if ('|email|number|password|search|tel|url|'.
-                                    indexOf('|' + inputType + '|') > -1) {
-                                inputType = 'text';
-                            }
-
+                            break;
+                        case 'SELECT':
                             action = 'Set';
-                            buffer.type = inputType;
-                        }
-                        break;
-                    case 'SELECT':
-                        action = 'Set';
-                        buffer.type = 'select';
-                        hasArgument = true;
-                        hasUnset = true;
-                        label = 'Drop Down List';
-                        text = getNodeText(node);
-                        break;
-                    case 'TEXTAREA':
-                        action = 'Set';
-                        buffer.type = 'text';
-                        hasArgument = true;
-                        label = 'Textarea';
-                        text = getNodeText(node);
-                        break;
-                }
+                            buffer.type = 'select';
+                            hasArgument = true;
+                            hasUnset = true;
+                            label = 'Drop Down List';
+                            text = getNodeText(node);
+                            break;
+                        case 'TEXTAREA':
+                            action = 'Set';
+                            buffer.type = 'text';
+                            hasArgument = true;
+                            label = 'Textarea';
+                            text = getNodeText(node);
+                            break;
+                    }
+                     */
+                    var fullText = getSanitizedText(text);
+                    text = getSanitizedText(text, 6);
 
-                var fullText = getSanitizedText(text);
-                text = getSanitizedText(text, 6);
+                    if (text !== '') {
+                        //jcardona manage of text within elements. idc about it.
+                        /*if (texts[text]) {
+                            texts[text]++;
 
-                if (text !== '') {
-                    if (texts[text]) {
-                        texts[text]++;
+                            if (texts[text] === 2) {
+                                var firstText = text + ' 1';
 
-                        if (texts[text] === 2) {
-                            var firstText = text + ' 1';
+                                // need to adjust the first entry and make it as part of the group
 
-                            // need to adjust the first entry and make it as part of the group
-                            definition = getDefinition({
-                                action: action,
-                                buffer: definitions[firsts[text]],
-                                fullText: fullText,
-                                hasArgument: hasArgument,
-                                label: label,
-                                letters: {
-                                    attribute: input.attributes.letter,
-                                    operation: input.operations.letter
-                                },
-                                text: firstText
-                            });
-
-                            definitions[firsts[text]] = definition;
-
-                            if (hasUnset) {
                                 definition = getDefinition({
                                     action: action,
-                                    buffer: definitions[unsets[text]],
+                                    buffer: definitions[firsts[text]],
                                     fullText: fullText,
                                     hasArgument: hasArgument,
                                     label: label,
@@ -722,44 +727,41 @@ window.POG=(function() {
                                         attribute: input.attributes.letter,
                                         operation: input.operations.letter
                                     },
-                                    negate: hasUnset,
                                     text: firstText
                                 });
 
-                                definitions[unsets[text]] = definition;
+                                definitions[firsts[text]] = definition;
+
+                                if (hasUnset) {
+                                    definition = getDefinition({
+                                        action: action,
+                                        buffer: definitions[unsets[text]],
+                                        fullText: fullText,
+                                        hasArgument: hasArgument,
+                                        label: label,
+                                        letters: {
+                                            attribute: input.attributes.letter,
+                                            operation: input.operations.letter
+                                        },
+                                        negate: hasUnset,
+                                        text: firstText
+                                    });
+
+                                    definitions[unsets[text]] = definition;
+                                }
                             }
+
+                            text = text + ' ' + texts[text];
                         }
+                        else {
+                            firsts[text] = index + 1;
+                            texts[text] = 1;
 
-                        text = text + ' ' + texts[text];
-                    }
-                    else {
-                        firsts[text] = index + 1;
-                        texts[text] = 1;
+                            if (hasUnset) {
+                                unsets[text] = index + 2;
+                            }
+                        }*/
 
-                        if (hasUnset) {
-                            unsets[text] = index + 2;
-                        }
-                    }
-
-                    definition = getDefinition({
-                        action: action,
-                        buffer: buffer,
-                        fullText: fullText,
-                        hasArgument: hasArgument,
-                        label: label,
-                        letters: {
-                            attribute: input.attributes.letter,
-                            operation: input.operations.letter
-                        },
-                        text: text
-                    });
-
-                    // faster array push
-                    definitions[++index] = definition;
-
-                    longestName = getLongestName(definition.attribute.name, longestName);
-
-                    if (hasUnset) {
                         definition = getDefinition({
                             action: action,
                             buffer: buffer,
@@ -770,23 +772,45 @@ window.POG=(function() {
                                 attribute: input.attributes.letter,
                                 operation: input.operations.letter
                             },
-                            negate: hasUnset,
                             text: text
                         });
 
                         // faster array push
                         definitions[++index] = definition;
-                    }
 
-                    if (!hasField && action === 'Set') {
-                        hasField = true;
+                        longestName = getLongestName(definition.attribute.name, longestName);
+
+                        if (hasUnset) {
+                            definition = getDefinition({
+                                action: action,
+                                buffer: buffer,
+                                fullText: fullText,
+                                hasArgument: hasArgument,
+                                label: label,
+                                letters: {
+                                    attribute: input.attributes.letter,
+                                    operation: input.operations.letter
+                                },
+                                negate: hasUnset,
+                                text: text
+                            });
+
+                            // faster array push
+                            definitions[++index] = definition;
+                        }
+
+                        if (!hasField && action === 'Set') {
+                            hasField = true;
+                        }
                     }
                 }
-            }
+            }else{ console.log("nodo botado");}
+
         }
 
         // operation extras
-        if (hasField && input.operations.extras.fill) {
+        //jcardona idc about autofilling()
+        /*if (hasField && input.operations.extras.fill) {
             var buffer = {
                 attribute: {},
                 operation: {
@@ -800,28 +824,31 @@ window.POG=(function() {
 
             // faster array push
             definitions[++index] = buffer;
-        }
+        }*/
 
-        if (hasField && submit.text !== '' && input.operations.extras['fill.submit']) {
-            var buffer = {
-                attribute: {},
-                operation: {
-                    documentation: 'Fill every fields in the page and submit it to target page.',
-                    name: getLetter('Fill And Submit', input.operations.letter)
-                },
-                negate: true,
-                sourceIndex: -1,
-                target: {
-                    modelName: input.model.target
-                },
-                type: 'fill.submit'
-            };
+        //jcardona idc about autofilling()
+        // if (hasField && submit.text !== '' && input.operations.extras['fill.submit']) {
+        //     var buffer = {
+        //         attribute: {},
+        //         operation: {
+        //             documentation: 'Fill every fields in the page and submit it to target page.',
+        //             name: getLetter('Fill And Submit', input.operations.letter)
+        //         },
+        //         negate: true,
+        //         sourceIndex: -1,
+        //         target: {
+        //             modelName: input.model.target
+        //         },
+        //         type: 'fill.submit'
+        //     };
+        //
+        //     // faster array push
+        //     definitions[++index] = buffer;
+        // }
 
-            // faster array push
-            definitions[++index] = buffer;
-        }
 
-        if (submit.text !== '' && input.operations.extras.submit) {
+        //jcardona extra operations are not needed
+        /*if (submit.text !== '' && input.operations.extras.submit) {
             var buffer = {
                 attribute: {},
                 operation: {
@@ -840,9 +867,10 @@ window.POG=(function() {
 
             // faster array push
             definitions[++index] = buffer;
-        }
+        }*/
 
-        if (input.operations.extras['verify.loaded']) {
+        //jcardona extra operations are not needed
+        /*if (input.operations.extras['verify.loaded']) {
             var sourceText = getPageVisibleHTML();
             sourceText = sourceText.replace(/(<([^>]+)>)/gi, '\n');
             var sentences = getSentences(sourceText);
@@ -871,9 +899,10 @@ window.POG=(function() {
 
             // faster array push
             definitions[++index] = buffer;
-        }
+        }*/
 
-        if (input.operations.extras['verify.url']) {
+        //jcardona this operation is awful
+        /*if (input.operations.extras['verify.url']) {
             // it's better to generate more information than less
             var uri = location.href.replace(document.location.origin, '');
 
@@ -892,13 +921,17 @@ window.POG=(function() {
 
             // faster array push
             definitions[++index] = buffer;
-        }
+        }*/
 
-        input.attributes.longestName = longestName;
+        //input.attributes.longestName = longestName;
 
         input.definitions = definitions;
         return input;
     }
+
+    //** =====================================================================
+    // Debug area
+    // */
 
     // ========================================================================
     // POG namespace
@@ -907,12 +940,11 @@ window.POG=(function() {
         generate: function(input) {
             input = input || {};
             var output = Object.extend(input);
-
             output = common.setDefaultValues(output);
             output = setDefinitions(output);
             output.url = document.location.href;
 
-            return output;
+            return {out: output, logz:log};
         },
         LETTERS: LETTERS,
         VISIBILITIES: VISIBILITIES

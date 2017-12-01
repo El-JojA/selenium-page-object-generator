@@ -200,6 +200,10 @@
                 this.getDefaultValue('copyright_claimant', '');
             input.copyright.year = input.copyright.year ||
                 this.getDefaultValue('copyright_year', new Date().getFullYear());
+            input.copyright.month = input.copyright.month ||
+                this.getDefaultValue('copyright_month', new Date().getUTCMonth() + 1); //Added the +1 because is 0 based, wich means that 0 is january, but added the +1 so 1 is january.
+            input.copyright.day = input.copyright.day ||
+                this.getDefaultValue('copyright_day', new Date().getUTCDate());
 
             // fill
             input.fill = input.fill || {};

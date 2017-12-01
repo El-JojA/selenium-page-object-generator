@@ -1,0 +1,75 @@
+{{#if model.namespace}}package {{{model.namespace}}}
+
+{{else}}
+// TODO: add here the package namespace
+
+{{/if}}
+{{#if model.basepage.namespace}}import {{{model.basepage.namespace}}}
+{{else}}// TODO: import the BasePageObject according to the project you are working on
+{{/if}}
+import org.openqa.selenium.By
+import org.openqa.selenium.Keys
+import org.openqa.selenium.WebDriver
+import org.openqa.selenium.WebElement
+import org.openqa.selenium.support.FindBy
+
+{{#if copyright.claimant}}
+/*
+* Copyright (c) {{copyright.year}}, {{{copyright.claimant}}}.
+* All Rights Reserved.
+*/
+{{/if}}
+
+/**
+* Created {{#if copyright.author}}by {{copyright.author}} {{/if}}on {{{copyright.day}}}/{{{copyright.month}}}/{{{copyright.year}}}.
+* By Katch LLC.
+*/
+
+public class {{{model.name}}} {{#if model.basepage.name}} extends {{{model.basepage.name}}}<{{{model.name}}}>{{/if}} {
+
+{{#attributes}}
+{{#if attribute.strategy}}
+    @FindBy({{attribute.strategy}} = "{{{attribute.value}}}")
+    private {{#equals type 'radio'}}List<WebElement>{{else}}WebElement{{/equals}} {{idvalid attribute.value}}
+{{/if}}
+{{/attributes}}
+
+    {{model.name}}(WebDriver driver) {
+        super(driver)
+    }
+
+    //Click elements
+{{#each definitions}}
+    {{../model.name}} click{{idvalid attribute.value}}(){
+        clickElement({{idvalid attribute.value}})
+    }
+
+{{/each}}
+
+    //SetText on elements
+{{#each definitions}}
+    {{../model.name}} set{{idvalid attribute.value}}Text(String s){
+        sendKeys({{idvalid attribute.value}}, s)
+    }
+
+{{/each}}
+
+
+    //isDisplay on elements
+{{#each definitions}}
+    boolean is{{idvalid attribute.value}}Displayed(){
+        isDisplayed({{idvalid attribute.value}})
+    }
+
+{{/each}}
+
+    //isNotDisplay on elements
+{{#each definitions}}
+    boolean is{{idvalid attribute.value}}NotDisplayed(){
+        isNotDisplayed({{idvalid attribute.value}})
+    }
+
+{{/each}}
+
+
+}
